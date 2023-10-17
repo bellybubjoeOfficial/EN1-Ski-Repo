@@ -1,0 +1,79 @@
+hfig = figure(1);
+myscreensize =get(0, 'screensize'); 
+set(hfig, 'Position', myscreensize);
+hold on;
+
+%Axes properties%
+ax=gca;
+ax.Position = [0 0 1 1]; 
+ax.XLim=[1 myscreensize(3)]
+ax.YLim=[1 myscreensize(4)]
+hold on; %keep objects 
+
+%position & radius/angle
+x=myscreensize(3)*0.75;      
+y=myscreensize(4)*0.6;
+r=300;
+theta = linspace(pi, 0, 100);  % <-- left half of circle
+xCirc = r * cos(theta) + x;
+yCirc = r * sin(theta) + y;
+
+
+%numerical information
+minSpeed = 0;
+maxSpeed = 200;
+numOfPoints = 11
+numbersUnRound = linspace(minSpeed, maxSpeed, numOfPoints)
+numbers = round(numbersUnRound)
+positionOfSpeed = linspace(pi, 0, numOfPoints)
+rad2 = r - 70;
+%play around with offset values
+xOffset = x -20;
+yOffset = y+20; 
+xPos = rad2 * cos(positionOfSpeed) + xOffset
+yPos = rad2 * sin(positionOfSpeed) +yOffset
+
+for kk = 1:numOfPoints
+    s = strcat(num2str(numbers(kk)))
+    disp(numbers(kk))
+    mymessage = text(xPos(kk), yPos(kk), s, 'FontSize', 20);
+end
+
+% inner circle
+innerCircOffset = 20; 
+rad3 = rad2 -innerCircOffset;
+xInCirc = rad3*  cos(theta) + x -10;
+yInCirc = rad3 *sin(theta)+ y;
+plot(xInCirc, yInCirc, 'k-', 'linewidth', 1)
+
+
+%plot
+plot(xCirc, yCirc, 'k-', 'linewidth', 2) % circle
+plot([x-r x+r], [y y], 'k-', 'linewidth', 2) %semi circle line
+hold on;
+
+
+% ticker
+theta2 = linspace(pi, 0, maxSpeed); %all speeds need to be rounded
+currSpeed = 20 %adjust with program
+ticker = plot([x x-rad3], [y y], 'g', 'linewidth', 2) %semi circle line
+hold on; 
+
+
+ k = 1;
+%insert moving ticker in while loop
+while true 
+    placeHolderSpeed = k; %replace with legit speed 
+    newxPos = rad3 *  cos(theta2(placeHolderSpeed)) + x -10;
+    newyPos =  rad3 *  sin(theta2(placeHolderSpeed)) + y -10;
+    set(ticker, 'XData', [x newxPos], 'YData', [y newyPos]);
+    pause(0.1);
+    k = k+1; 
+    %temp
+    if(k == maxSpeed)
+        break
+    end
+end 
+
+
+
