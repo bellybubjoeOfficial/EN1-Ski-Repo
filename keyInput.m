@@ -1,13 +1,27 @@
 function keyInput(src,event)
-    global force SystemParams
-    DeltaForce=0.10;
+    global force SystemParams gateSpeed
+    DeltaForce=0.001;
+    maxForce=1;
+    minForce=-1;
     switch event.Key
         case 'rightarrow'
-            force=force-DeltaForce;
+            if(force>minForce)
+                force=force-DeltaForce;
+            end
+            if(force>0)
+                force=-force;
+            end
             SystemParams.Damping = 4;
+            gateSpeed=gateSpeed-0.01;
         case 'leftarrow'
-            force=force+DeltaForce;
+            if(force<maxForce)
+                force=force+DeltaForce;
+            end
+            if(force<0)
+                force=abs(force);
+            end
             SystemParams.Damping = 4;
+            gateSpeed=gateSpeed-0.01;
         case 'uparrow'
             force=force-0;
         case 'downarrow'
