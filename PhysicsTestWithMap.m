@@ -24,10 +24,14 @@ hold on
 
 
 slope=patch([-1000 1000 1000 -1000],[-5 -5 1205 1210],[0 0 0 0],[0.7 0.7 0.7]);
-skier=patch([0 10 4 6]-5,[5 5 5 5],[0 0 15 15],'k');
+skier=patch([0 10 6 4]-5,[5 5 5 5],[0 0 15 15],'k');
 
 
 ax=gca;
+ax.XLim=[1-myscreensize(3)/2 myscreensize(3)/2];
+ax.YLim=[0 myscreensize(4)];
+speeeed=[];
+timee=[];
 
 disp('axis.CameraPosition');
 disp(ax.CameraPosition);
@@ -38,23 +42,23 @@ disp(ax.CameraViewAngle);
 
 ax.CameraPosition=[0 -5 10];
 ax.CameraTarget=[0 5 5];
-%ax.Projection='perspective';
+ax.Projection='perspective';
 grid off
 axis off
 
 
-
+%{
 r1=1;
 theta1=0:0.01:pi;
 x1=r1*cos(theta1)*21;
 y1=r1*sin(theta1)*21;
-outerSemiCircle=plot3(1.5*x1-100,y1+150,(y1)/2+10,'k');
-bottomLine=plot3([-131.5 -68.5], [150 150], [10 10],'k');
+outerSemiCircle=plot3(1.5*x1,x1,(y1)/2-20,'k');
+bottomLine=plot3([-131.5 -68.5], [0 0], [10 10],'k');
 y2=y1*0.7;
 x2=x1*0.7;
-innerSemiCircle=plot3(x2-100,y2+150,y2/2+10,'k');
-ticker=plot3([-100 -100],[150 150],[0 20],'g','LineWidth',2);
-
+innerSemiCircle=plot3(1.5*x2,x1,y2/2-20,'k');
+ticker=plot3([-100 -100],[171 171],[10 18],'g','LineWidth',2);
+%}
 
 %numerical information
 minSpeed = 0;
@@ -66,14 +70,14 @@ positionOfSpeed = linspace(pi, 0, numOfPoints);
 rad2 = r1 - 70;
 %play around with offset values
 xOffset = x -20;
-yOffset = y+20; 
+yOffset = y+20;
 xPos = rad2 * cos(positionOfSpeed)/4; + xOffset;
 yPos = -rad2 * sin(positionOfSpeed)/4; +yOffset;
 
 for kk = 1:numOfPoints
     s = strcat(num2str(numbers(numOfPoints-kk+1)));
     disp(numbers(kk))
-    mymessage = text(xPos(kk)-1.5, 0, yPos(kk)+1, s, 'FontSize', 10);
+    %mymessage = text(xPos(kk)-1.5, 0, yPos(kk)+1, s, 'FontSize', 10);
 end
 
 startSpeed=1;
@@ -96,11 +100,10 @@ gate.Y2=gate.Y1+deltaY;
 deltaZ=10;
 gate.Z1=10;
 gate.Z2=gate.Z1+deltaZ;
-deltaLeg=deltaZ*2;  
+deltaLeg=deltaZ*2;
 
 %ode params
-timer02.Period=0.01;
-tspan = [0, timer02.Period];
+tspan = [0, 0.01];
 time_force = tspan;
 SystemParams.tspan = tspan;
 SystemParams.time_force = time_force;
@@ -133,39 +136,87 @@ end
 
 counter=0;
 gateSpeed = 1;
-terminalSpeed = 5; %tune later
+terminalSpeed = 9.8; %tune later
 
-while(counter<5000)
+%stopwatch message
+xPos7 = myscreensize(3)*(0.1/5);
+yPos7= myscreensize(4)*(0.1/5);
+mymessage = text(xPos7, yPos7, 20.153, '0', 'FontSize', 20);
+mymessage2 = text(xPos7, yPos7, 10.153, 'j', 'FontSize', 20);
+
+%stopwatch begin
+startTime = tic(); % Start the stopwatch
+elapsedTime = 0;
+
+
+bread=0;
+while(bread<20)
+    %timer update
+    currentTime = toc(startTime);
+    elapsedTime = round(currentTime, 2); % Round to 2 decimal places
+    updateTime(mymessage, elapsedTime); %update function
+    speedString = num2str(gateSpeed);
+    set(mymessage2,'string',speedString);
     counter=counter+1;
-    gateSpeed = 1 + (counter/20);
+    gateSpeed = gateSpeed + (counter/20000);
     if (gateSpeed >= terminalSpeed)
         gateSpeed = terminalSpeed;
     end
 
-    pause(0.01)
+    pause(0.01);
     for i=1:gateNum
-        set(gate.flag(i),'YData',get(gate.flag(i),'YData')-gateSpeed);
-        set(gate.leftLeg(i),'YData',get(gate.leftLeg(i),'YData')-gateSpeed);
-        set(gate.rightLeg(i),'YData',get(gate.rightLeg(i),'YData')-gateSpeed);
+        if(mod(i,2)==1)
+            set(gate.flag(i),'YData',get(gate.flag(i),'YData')-gateSpeed/4);
+            set(gate.leftLeg(i),'YData',get(gate.leftLeg(i),'YData')-gateSpeed/4);
+            set(gate.rightLeg(i),'YData',get(gate.rightLeg(i),'YData')-gateSpeed/4);
+        else
+            set(gate.flag(i),'YData',get(gate.flag(i),'YData')-gateSpeed/1.2/4);
+            set(gate.leftLeg(i),'YData',get(gate.leftLeg(i),'YData')-gateSpeed/1.2/4);
+            set(gate.rightLeg(i),'YData',get(gate.rightLeg(i),'YData')-gateSpeed/1.2/4);
+        end
+
 
         gateMovements();
-        
+
         set(gate.flag(i),'XData',get(gate.flag(i),'XData')+gatePos);
         set(gate.leftLeg(i),'XData',get(gate.leftLeg(i),'XData')+gatePos);
         set(gate.rightLeg(i),'XData',get(gate.rightLeg(i),'XData')+gatePos);
 
         if get(gate.flag(i),'YData')<0
-           set(gate.flag(i),'YData',zeros(1:4)+900);
-           set(gate.rightLeg(i),'YData',zeros(1:4)+900) 
-           set(gate.leftLeg(i),'YData',zeros(1:4)+900) 
-        elseif abs(get(gate.flag(i), 'XData')) <= myscreensize(3)/2
-            gateSpeed = gateSpeed - 0.4;
+            bread=bread+1;
+            if(bread>5)
+                break
+            end
+            set(gate.flag(i),'YData',zeros(1:4)+900);
+            set(gate.rightLeg(i),'YData',zeros(1:4)+900)
+            set(gate.leftLeg(i),'YData',zeros(1:4)+900)
+        elseif rem(i+2,2) == 1
+            %disp('blue');
+            if mean(get(gate.flag(i),'YData')) <= 5
+                if mean(get(gate.flag(i), 'XData')) <= mean(get(skier, 'XData'))
+                    gateSpeed = gateSpeed - 0.7;
+                    if(gateSpeed<0)
+                        gateSpeed=-gateSpeed;
+                    end
+                    disp('decrease blue');
+                end
+            end
+        elseif rem(i+2,2) == 0
+            %disp('red');
+            if mean(get(gate.flag(i),'YData')) <= 5
+                %disp('y red');
+                if mean(get(gate.flag(i), 'XData')) >= mean(get(skier, 'XData'))
+                    gateSpeed = gateSpeed - 0.7;
+                    if(gateSpeed<0)
+                        gateSpeed=-gateSpeed;
+                    end
+                    disp('decrease red');
+                end
+            end
         end
     end
-    %set(ticker,'XData',[0 -20*cos(pi*speed/200)]);
-    %set(ticker,'ZData',[0 20*sin(pi*speed/200)]);
     speed=gateSpeed*(200/terminalSpeed);
-    
+
 end
 
 hold on
