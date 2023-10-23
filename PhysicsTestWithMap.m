@@ -1,6 +1,7 @@
 close
+clear all
 
-global SystemParams force gatePos
+global SystemParams force gatePos gateSpeed
 
 myscreensize = get(0, 'ScreenSize');
 screenObj = figure(1);
@@ -30,8 +31,9 @@ skier=patch([0 10 6 4]-5,[5 5 5 5],[0 0 15 15],'k');
 ax=gca;
 ax.XLim=[1-myscreensize(3)/2 myscreensize(3)/2];
 ax.YLim=[0 myscreensize(4)];
-speeeed=[];
-timee=[];
+ax.ZLim = [-250 500];
+speedArray=[];
+timeArray=[];
 
 disp('axis.CameraPosition');
 disp(ax.CameraPosition);
@@ -58,7 +60,7 @@ y2=y1*0.7;
 x2=x1*0.7;
 innerSemiCircle=plot3(1.5*x2,x1,y2/2-20,'k');
 ticker=plot3([-100 -100],[171 171],[10 18],'g','LineWidth',2);
-%}
+
 
 %numerical information
 minSpeed = 0;
@@ -83,12 +85,13 @@ end
 startSpeed=1;
 speed=startSpeed;
 maxSpeed=200;
-
+%}
 
 xVals=[0 10 10 0 ];
 yVals=[0 0 20 20 ];
 zVals=[0 0 30 30 ];
 %patch(xVals,yVals,zVals,'g');
+
 
 gateNum=2;
 deltaX=10;
@@ -132,8 +135,6 @@ for i=1:gateNum
     end
 end
 
-
-
 counter=0;
 gateSpeed = 1;
 terminalSpeed = 9.8; %tune later
@@ -141,22 +142,28 @@ terminalSpeed = 9.8; %tune later
 %stopwatch message
 xPos7 = myscreensize(3)*(0.1/5);
 yPos7= myscreensize(4)*(0.1/5);
-mymessage = text(xPos7, yPos7, 20.153, '0', 'FontSize', 20);
-mymessage2 = text(xPos7, yPos7, 10.153, 'j', 'FontSize', 20);
+timerText = text(xPos7, yPos7, -3000, '0', 'FontSize', 20);
+spedometerText = text(xPos7, yPos7, 20, 'j', 'FontSize', 20);
+speedWord = "Speed: ";
 
 %stopwatch begin
 startTime = tic(); % Start the stopwatch
 elapsedTime = 0;
 
-
+index = 1;
 bread=0;
+speedArray(1) = 0;
+timeArray(1) = 0;
 while(bread<20)
     %timer update
+    speedArray(end+1) = gateSpeed;
+    timeArray(end+1) = elapsedTime;
     currentTime = toc(startTime);
     elapsedTime = round(currentTime, 2); % Round to 2 decimal places
-    updateTime(mymessage, elapsedTime); %update function
+    updateTime(timerText, elapsedTime); %update function
     speedString = num2str(gateSpeed);
-    set(mymessage2,'string',speedString);
+    finalSpeedWord = append(speedWord, speedString);
+    set(spedometerText,'string',finalSpeedWord);
     counter=counter+1;
     gateSpeed = gateSpeed + (counter/20000);
     if (gateSpeed >= terminalSpeed)
@@ -194,7 +201,7 @@ while(bread<20)
             %disp('blue');
             if mean(get(gate.flag(i),'YData')) <= 5
                 if mean(get(gate.flag(i), 'XData')) <= mean(get(skier, 'XData'))
-                    gateSpeed = gateSpeed - 0.7;
+                    gateSpeed = gateSpeed - 1.35;
                     if(gateSpeed<0)
                         gateSpeed=-gateSpeed;
                     end
@@ -206,7 +213,7 @@ while(bread<20)
             if mean(get(gate.flag(i),'YData')) <= 5
                 %disp('y red');
                 if mean(get(gate.flag(i), 'XData')) >= mean(get(skier, 'XData'))
-                    gateSpeed = gateSpeed - 0.7;
+                    gateSpeed = gateSpeed - 1.35;
                     if(gateSpeed<0)
                         gateSpeed=-gateSpeed;
                     end
@@ -216,10 +223,17 @@ while(bread<20)
         end
     end
     speed=gateSpeed*(200/terminalSpeed);
-
+    
 end
 
-hold on
+%end game plots
+figure(2)
+
+plot(timeArray, speedArray)
+xlabel('Time (sec)');
+ylabel('Speed (pixels/sec)');
+
+
 
 function gateMovements(~)
 

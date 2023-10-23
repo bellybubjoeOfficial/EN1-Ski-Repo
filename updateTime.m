@@ -5,10 +5,11 @@ function updateTime(mymessage, elapsedTime)
 
     % Format the time as "mm:ss"
     formattedTime = sprintf('%02d:%05.2f', minutes, remainingSeconds);
+    timerWord = "Time: "
+    messageWord = append(timerWord, formattedTime);
     %update message
-    set(mymessage,'string', formattedTime)
+    set(mymessage,'string', messageWord)
     disp(['Elapsed Time: ' num2str(elapsedTime) ' seconds']);
-    disp('hi i exist')
 end
 
 

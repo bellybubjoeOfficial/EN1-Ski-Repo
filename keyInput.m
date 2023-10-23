@@ -12,7 +12,7 @@ function keyInput(src,event)
                 force=-force;
             end
             SystemParams.Damping = 4;
-            gateSpeed=gateSpeed-0.01;
+            gateSpeed=gateSpeed-0.005;
         case 'leftarrow'
             if(force<maxForce)
                 force=force+DeltaForce;
@@ -21,7 +21,7 @@ function keyInput(src,event)
                 force=abs(force);
             end
             SystemParams.Damping = 4;
-            gateSpeed=gateSpeed-0.01;
+            gateSpeed=gateSpeed-0.005;
         case 'uparrow'
             force=force-0;
         case 'downarrow'
