@@ -27,7 +27,7 @@ switch Exp.SkiProtocolCase
         %set(gatesPassedMessage,'string',strcat('Force: ',num2str(force)));
 
         Exp.counter=Exp.counter+1;
-        gateSpeed = gateSpeed + (Exp.counter/20000);
+        gateSpeed = gateSpeed + (Exp.counter/200);
         if (gateSpeed >= Exp.terminalSpeed)
             gateSpeed = Exp.terminalSpeed;
         end
@@ -91,4 +91,23 @@ switch Exp.SkiProtocolCase
         disp("case 5");
         kinemats.speed=gateSpeed*(200/Exp.terminalSpeed);
         Exp.done = 1;
+end
+end
+
+function gateMovements(~)
+
+global SystemParams force 
+XScale = 200;
+
+%move vehicle according to ode45
+tspan = SystemParams.tspan;
+time_force = SystemParams.time_force;
+force_array = [0; 0] + force;
+
+[tt,yy] = ode45(@(t,y)odefun_slidingblock_skiing(t,y, time_force, force_array, SystemParams), SystemParams.tspan, SystemParams.y0);
+SystemParams.y0 = yy(end,:);
+
+gatePos = round(XScale * yy(1,1));
+%gatePos =1;
+%disp('test');
 end
