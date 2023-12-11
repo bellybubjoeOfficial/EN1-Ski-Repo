@@ -122,9 +122,9 @@ speedString= "";
 %outputStates = [elapsedTime,speedString,Exp.gatesPassed];
 
 
-Data.TrialCounter=1;
-Data.TotalTrials=6;
-for i=1:Data.TotalTrials
+%Data.TrialCounter=1;
+%Data.TotalTrials=6;
+%for i=1:Data.TotalTrials
     Exp.SkiProtocolCase=0;
     Exp.done=false;
     
@@ -181,7 +181,7 @@ for i=1:Data.TotalTrials
             
             case 2
                 if(gateSpeed<Exp.terminalSpeed)&&(gateSpeed>0)
-                    gateSpeed=gateSpeed+(1);  %change back to +(1/200) after finished testing
+                    gateSpeed=gateSpeed+(1/200);  %change back from +(1) to +(1/200) after finished testing
                 end
                 gateMovements()
                 
@@ -231,7 +231,7 @@ for i=1:Data.TotalTrials
                 
                 %potentially move to after data is collected, will ask others - Tommy
                 if(error<0)
-                    gateSpeed=gateSpeed*0.9; %change back to *0.25 when done with testing;
+                    gateSpeed=gateSpeed*0.25; %change back from *0.9 *0.25 when done with testing;
                     disp("gate "+Exp.nextGate+" missed");
                 end
     
@@ -293,15 +293,14 @@ for i=1:Data.TotalTrials
                
                 plot(errorOverSpeedData(1,:),'LineWidth',4);
 
+                %Data analysis could show 3 graphs, speed/time, error/time, and errorOverspeed/time 
+                %then write data to .mat file and show average
+                %average errorOverSpeed per trial shown as last point of data? 
 
-                if(gateSpeed>0)
-                    Exp.nextGate=1;
-                    Exp.SkiProtocolCase=1;
-                end
         end
         
     end
-end
+%end
 
 
 
