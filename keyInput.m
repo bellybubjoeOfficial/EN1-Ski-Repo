@@ -1,33 +1,30 @@
 function keyInput(src,event)
-    global force SystemParams gateSpeed
-    DeltaForce=0.001;
-    maxForce=1;
-    minForce=-1;
+    global force SystemParams gateSpeed gameMode
     switch event.Key
-        case 'rightarrow'
-            if(force>minForce)
-                force=force-DeltaForce;
-            end
-            if(force>0)
-                force=-force;
-            end
-            SystemParams.Damping = 4;
-            gateSpeed=gateSpeed-0.005;
         case 'leftarrow'
-            if(force<maxForce)
-                force=force+DeltaForce;
+            force=abs(force);    
+            if(force<=1 && force < gateSpeed)
+               force=force+0.01; 
             end
-            if(force<0)
-                force=abs(force);
+            
+        case 'rightarrow'
+            force = -abs(force);
+            if(force>=-1 && force < gateSpeed)
+               force=force-0.01; 
             end
-            SystemParams.Damping = 4;
-            gateSpeed=gateSpeed-0.005;
         case 'uparrow'
-            force=force-0;
+        %    gateSpeed=gateSpeed*1.001;
         case 'downarrow'
-            force=force-0;
-        case 'escape'
+        %    gateSpeed=gateSpeed/1.1;
+        case 'k'
+            gateSpeed=-1;
             close
+        case 'space'
+            disp('funcional')
+            if(gateSpeed<=0)
+                gateSpeed=1;
+                gameMode="trial";
+            end
         otherwise
             SystemParams.Damping = 2.5;
     end
