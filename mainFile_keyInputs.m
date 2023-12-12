@@ -1,7 +1,7 @@
 close
 clear
 
-global SystemParams force gatePos gateSpeed
+global SystemParams force gatePos gateSpeed gameMode
 
 myscreensize = get(0, 'ScreenSize');
 screenObj = figure(1);
@@ -97,8 +97,10 @@ end
 
 
 Exp.counter=0;
-%gateSpeed=1;
 Exp.terminalSpeed = 9.8; %tune later
+Data.TrialCounter=1;
+Data.TotalTrials=6;
+
 
 %stopwatch message
 xPos = myscreensize(3)*(0.1/5);
@@ -107,6 +109,9 @@ timeMessage = text(xPos, yPos, 20.153, '0', 'FontSize', 20,'color','none');
 speedMessage = text(xPos+14, yPos, 15.153, 'j', 'FontSize', 20,'color','none');
 gatesPassedMessage = text(xPos+7, yPos, 18.153, 'j', 'FontSize', 20,'color','none');
 
+playAgainString = strcat("To continue to trial ",num2str(Data.TrialCounter+1),' press "Space"');
+playAgainText = text(-500, -220, -220, strcat("To continue to trial ",num2str(Data.TrialCounter+1),' press "Space"'),'FontSize',20,'Color','none');
+instructionsMenuText = text(-700, -180, -180,'Press the "ESC" key to view instructions again','FontSize',20,'Color','none');
 instructions1 = text(-200, 40, -80, 'How to Play:', 'FontSize', 20);
 instructions2 = text(-1320, 40, -130, 'Use the left arrow to turn to the left, and the right arrow to turn to the right. You will', 'FontSize', 20);
 instructions3 =text(-1480, 40, -180, 'accelerate automatically, use the up arrow speed up more and the down arrow to slow down', 'FontSize', 20);
@@ -118,20 +123,20 @@ instructions = [instructions1, instructions2, instructions3, instructions4, inst
 startTime = tic(); % Start the stopwatch
 elapsedTime = 0;
 Exp.nextGate=0;
+Exp.missedGates=0;
 speedString= "";
 %outputStates = [elapsedTime,speedString,Exp.gatesPassed];
 
 
-%Data.TrialCounter=1;
-%Data.TotalTrials=6;
 %for i=1:Data.TotalTrials
     Exp.SkiProtocolCase=0;
     Exp.done=false;
     
     gateSpeed_old=gateSpeed;
-    while(Exp.done == false)
+    while(Exp.done == false || Data.TrialCounter<=Data.TotalTrials)
+      
         if(gateSpeed~=gateSpeed_old)&&(Exp.SkiProtocolCase~=2&&Exp.SkiProtocolCase~=1)
-            disp("gateSpeed: " + gateSpeed);
+            %disp("gateSpeed: " + gateSpeed);
         end
         gateMovements();
         pause(1.000000e-11110100000);
@@ -139,25 +144,45 @@ speedString= "";
         switch Exp.SkiProtocolCase
     
             case -1 %reset the game
-
+                for a=1:5
+                        instructions(a).Color='k';
+                end
             
             case 0             %base case start game
-                if (Exp.nextGate<Exp.totalGates)
+                if(Data.TrialCounter>1)
+                    %disp("ahhhhhh")
+                end
+
+                if (Exp.nextGate<Exp.totalGates && gateSpeed > 0)
                     Exp.nextGate = Exp.nextGate + 1;
                     Exp.SkiProtocolCase = 1;
-                else
-                    Exp.SkiProtocolCase = 5;
+                elseif(Exp.nextGate>Exp.totalGates)
+                    Exp.SkiProtocolCase = 4;
     
                 end
+                
+
+
+
             case 1 %updates onscreen text
-                currentTime = toc(startTime);
-                elapsedTime = round(currentTime, 2); % Round to 2 decimal places
-                update_Time(timeMessage, elapsedTime); %update function
-                speedString = strcat("Speed: ",num2str(gateSpeed));
-                %outputStates = [elapsedTime,speedString,Exp.nextGate-1];
-                set(speedMessage,'string',speedString);
-                set(gatesPassedMessage,'string',strcat("Gates Passed: ",num2str(Exp.nextGate-1),'/12'));
+                if(Data.TrialCounter>1)
+                    %disp("ggg")
+                end
+                
+                
                 if(gateSpeed>0)
+                    timeMessage.Position=[xPos, yPos, 20.153];
+                    speedMessage.Position=[xPos+14, yPos, 15.153];
+                    gatesPassedMessage.Position=[xPos+7, yPos, 18.153];
+
+                    currentTime = toc(startTime);
+                    elapsedTime = round(currentTime, 2); % Round to 2 decimal places
+                    update_Time(timeMessage, elapsedTime); %update function
+                    speedString = strcat("Speed: ",num2str(gateSpeed));
+                    %outputStates = [elapsedTime,speedString,Exp.nextGate-1];
+                    set(speedMessage,'string',speedString);
+                    set(gatesPassedMessage,'string',strcat("Gates Passed: ",num2str(Exp.nextGate-1),'/12'));
+                
                     if(mod(Exp.nextGate,2)==1 && max(get(gameObj.gate.rightLeg(Exp.nextGate),'XData')) > 0)         %left of blue (good)
                         set(idealTrajPatch,'FaceColor','green')
                         set(idealTrajPatch,'XData',[min(get(gameObj.skier, 'XData')) max(get(gameObj.gate.rightLeg(Exp.nextGate),'XData')) max(get(gameObj.gate.rightLeg(Exp.nextGate),'XData')) min(get(gameObj.gate.leftLeg(Exp.nextGate),'XData'))]);
@@ -181,7 +206,7 @@ speedString= "";
             
             case 2
                 if(gateSpeed<Exp.terminalSpeed)&&(gateSpeed>0)
-                    gateSpeed=gateSpeed+(1/200);  %change back from +(1) to +(1/200) after finished testing
+                    gateSpeed=gateSpeed+(1);  %change back from +(1) to +(1/200) after finished testing
                 end
                 gateMovements()
                 
@@ -211,7 +236,6 @@ speedString= "";
                 
                 if max(get(gameObj.gate.leftLeg(Exp.nextGate),'YData'))<=5
                     Exp.SkiProtocolCase = 3;
-                    disp("gate "+Exp.nextGate+" passed");
                 else
                     Exp.SkiProtocolCase = 1;
                 end
@@ -231,8 +255,11 @@ speedString= "";
                 
                 %potentially move to after data is collected, will ask others - Tommy
                 if(error<0)
-                    gateSpeed=gateSpeed*0.25; %change back from *0.9 *0.25 when done with testing;
+                    gateSpeed=gateSpeed*0.9; %change back from *0.9 *0.25 when done with testing;
                     disp("gate "+Exp.nextGate+" missed");
+                    Exp.missedGates=Exp.missedGates+1;
+                else
+                    disp("gate "+Exp.nextGate+" passed");
                 end
     
                 speedData(Data.TrialCounter,Exp.nextGate)=gateSpeed^2;
@@ -246,6 +273,7 @@ speedString= "";
                     disp("course complete in " +currentTime+ " seconds");
                     Exp.SkiProtocolCase=4;
                 end
+            
             case 4
                 disp("gate to move is gate " + Exp.nextGate);
                 set(gameObj.gate.flag(12),'YData',get(gameObj.gate.flag(12),'YData')+600);
@@ -255,7 +283,7 @@ speedString= "";
 
                 Exp.nextGate=12;
                 set(gatesPassedMessage,'string',strcat("Gates Passed: ",num2str(Exp.nextGate),'/12'));
-                gateSpeed=0;
+                %gateSpeed=0;
                 idealTrajPatch.FaceColor='none';
                 
                 for c=1:Exp.totalGates+2
@@ -278,21 +306,44 @@ speedString= "";
                 end
                 ax.Projection="orthographic";
                         
-                timeMessage.Position=[-300 -20 -20];
-                gatesPassedMessage.Position=[-300 -60 -60];
-                speedMessage.Position=[-300 -100 -100];
-                disp(speedData);
-                Exp.done=true;
                 
+                timeMessage.Position=[-375 -20 -20];
+                gatesPassedMessage.Position=[-500 -60 -60];
+                speedMessage.Position=[-175 -100 -100];
+                
+                gatesPassedMessage.String=strcat("Gates Passed Correctly: ",num2str(Exp.nextGate-Exp.missedGates),"/12");
+
+                set(instructionsMenuText,"Color",'k');
+                playAgainText.Color='k';
+
+                %disp(speedData);
+                if(gateSpeed>0)
+                    gateSpeed=0;
+                    Exp.SkiProtocolCase=0;
+                end
+
+                Data.TrialCounter=Data.TrialCounter+1;
+                Exp.nextGate=0;
+                Exp.missedGates=0;
+                currentTime=0;
+                %startTime=0;
+                startTime=tic();
+
+                %Exp.done=true;
+                
+                %{
                 figure(200)
                 hold on
                 bar(speedData(Data.TrialCounter,:));
                 bar(errorData(Data.TrialCounter,:)/10);
                 ylabel('Downhill Speed')
                 xlabel('Baseline                                            Eval');
-               
-                plot(errorOverSpeedData(1,:),'LineWidth',4);
+                
 
+                plot(errorOverSpeedData(1,:),'LineWidth',4);
+                %}
+
+                
                 %Data analysis could show 3 graphs, speed/time, error/time, and errorOverspeed/time 
                 %then write data to .mat file and show average
                 %average errorOverSpeed per trial shown as last point of data? 
@@ -300,6 +351,7 @@ speedString= "";
         end
         
     end
+    %end
 %end
 
 
